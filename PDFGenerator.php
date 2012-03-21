@@ -29,6 +29,7 @@ class PDFGenerator {
    protected $outputMode = 'download';
    protected $outputFilename;
    protected $inputFilename;
+   protected $downloadFilename = null;
 
    // Captured stdout from the pdf generation
    protected $stdout;
@@ -53,8 +54,9 @@ class PDFGenerator {
 
       $command = $this->pathToBinary.' '.$args;
 
-      if ($this->outputMode = self::$DOWNLOAD) {
-         $this->outputPDFDownloadHeaders();
+      if ($this->outputMode == self::$DOWNLOAD) {
+         $this->outputPDFDownloadHeaders($length = null,
+          $this->downloadFilename);
          passthru($command, $exit_code);
       } else {
          exec($command . " 2>&1", $output, $exit_code);
@@ -82,6 +84,15 @@ class PDFGenerator {
             $this->outputFilename = tempnam('/tmp', 'pdf') . '.pdf';
             break;
       }
+   }
+
+   /**
+    * Sets the default filename recommended if the PDF is downloaded.
+    * This option only applies if the PDF is downloaded, it does nothing if
+    * the Output Mode is not DOWNLOAD
+    */
+   public function setDownloadFilename($filename) {
+      $this->downloadFilename = $filename;
    }
 
    /**
@@ -172,15 +183,20 @@ class PDFGenerator {
       return $args;
    }
 
-   protected static function outputPDFDownloadHeaders($length = null) {
+   protected static function outputPDFDownloadHeaders($length = null,
+    $downloadFilename = null) {
       header('Content-Description: File Transfer');
       header('Cache-Control: public, must-revalidate, max-age=0'); // HTTP/1.1
       header('Pragma: public');
       header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
       // force download dialog
       //header('Content-Type: application/force-download');
-      // use the Content-Disposition header to supply a recommended filename
-      //header('Content-Disposition: attachment; filename="'.basename($file).'";');
+      // Use the Content-Disposition header to supply a recommended filename
+      // (setting 'attachment' instead of 'inline' forces a download in Chrome)
+      if ($downloadFilename) {
+         header('Content-Disposition: inline; filename="'.
+          $downloadFilename.'";');
+      }
       // Multiple content-type headers for best support
       header('Content-Type: application/octet-stream', false);
       header('Content-Type: application/download', false);
