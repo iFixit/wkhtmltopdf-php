@@ -47,6 +47,19 @@ class PDFGenerator {
    }
 
    /**
+    * Generates a PDF from the options set on this instance, saves the result
+    * to a temp file and returns the path.
+    *
+    * Note: Throws an exception on failure
+    */
+   public function generateToTempFile() {
+      $this->setOutputMode(self::$TEMP_FILE);
+      $this->generate();
+      return $this->outputFilename;
+   }
+
+
+   /**
     * Generates a PDF according to the options set on this instance.
     */
    protected function generate() {
@@ -77,7 +90,7 @@ class PDFGenerator {
    /**
     * Valid modes are defined at the top of the class
     */
-   public function setOutputMode($mode) {
+   protected function setOutputMode($mode) {
       $this->outputMode = $mode;
       switch ($mode) {
          case self::$TEMP_FILE:
