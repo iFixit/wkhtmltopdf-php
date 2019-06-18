@@ -185,6 +185,9 @@ class PDFGenerator {
          if (true === $value) {
             // arguments that don't have values: " --option "
             $args .= " {$dash}{$key} ";
+         }  elseif (is_array ( $value )) {
+             // arguments that have multible values: " --option value "              
+             $args .= " {$dash}{$key} " . implode ( " ", array_map ( 'escapeshellarg', $value ) );
          } else {
             // arguments that have values: " --option value "
             $args .= " {$dash}{$key} " . escapeshellarg($value);
